@@ -15,6 +15,33 @@
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <script>
+(function(){
+  const ENDPOINT = "https://mybot.samoilov.workers.dev"; // сюда вставишь адрес Worker'а
+  function track(type, label){
+    fetch(ENDPOINT, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        type: type,
+        label: label,
+        page: location.pathname,
+        ref: document.referrer || "direct",
+        ua: navigator.userAgent,
+        ts: Date.now()
+      })
+    }).catch(()=>{}); // ошибки молча игнорим, чтобы не мешать пользователю
+  }
+  // просмотр страницы
+  track("view", document.title);
+  // клики по всем ссылкам на Telegram
+  document.querySelectorAll('a[href*="t.me"]').forEach(function(a){
+    a.addEventListener("click", function(){
+      track("lead", a.textContent.trim() + " · " + location.pathname);
+    });
+  });
+})();
+</script>
 
 <header>
   <nav class="nav">
