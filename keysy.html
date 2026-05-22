@@ -18,27 +18,34 @@
 </head>
 <script>
 (function(){
-  const ENDPOINT = "https://mybot.samoilov.workers.dev"; // сюда вставишь адрес Worker'а
-  function track(type, label){
-    fetch(ENDPOINT, {
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        type: type,
-        label: label,
-        page: location.pathname,
-        ref: document.referrer || "direct",
-        ua: navigator.userAgent,
-        ts: Date.now()
-      })
-    }).catch(()=>{}); // ошибки молча игнорим, чтобы не мешать пользователю
+  const ENDPOINT = "https://ТВОЙ-WORKER.workers.dev"; // ← вставь адрес Worker'а
+
+  function payload(type, label){
+    return JSON.stringify({
+      type: type, label: label,
+      page: location.pathname,
+      ref: document.referrer || "direct",
+      ua: navigator.userAgent, ts: Date.now()
+    });
   }
-  // просмотр страницы
-  track("view", document.title);
-  // клики по всем ссылкам на Telegram
+
+  // просмотр — обычным fetch, тут спешить некуда
+  fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"application/json"}, body:payload("view", document.title)}).catch(function(){});
+
+  // клики по Telegram-кнопкам — через sendBeacon (доставляется при уходе со страницы)
   document.querySelectorAll('a[href*="t.me"]').forEach(function(a){
-    a.addEventListener("click", function(){
-      track("lead", a.textContent.trim() + " · " + location.pathname);
+    a.addEventListener("click", function(e){
+      const data = payload("lead", a.textContent.trim() + " · " + location.pathname);
+      let sent = false;
+      if (navigator.sendBeacon){
+        try { sent = navigator.sendBeacon(ENDPOINT, new Blob([data], {type:"application/json"})); } catch(_){}
+      }
+      if (!sent){
+        e.preventDefault();
+        const href = a.href;
+        fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"application/json"}, body:data, keepalive:true}).catch(function(){}).finally(function(){ window.location.href = href; });
+        setTimeout(function(){ window.location.href = href; }, 250);
+      }
     });
   });
 })();
