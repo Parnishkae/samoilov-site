@@ -16,45 +16,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Manrope:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
-<script>
-(function(){
-  const ENDPOINT = "https://mybot.samoilov.workers.dev"; // ← вставь адрес Worker'а
-
-  function payload(type, label){
-    return JSON.stringify({
-      type: type, label: label,
-      page: location.pathname,
-      ref: document.referrer || "direct",
-      ua: navigator.userAgent, ts: Date.now()
-    });
-  }
-
-  // просмотр — обычным fetch, тут спешить некуда
-  fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"application/json"}, body:payload("view", document.title)}).catch(function(){});
-
-  // клики по Telegram-кнопкам — через sendBeacon (доставляется при уходе со страницы)
-  document.querySelectorAll('a[href*="t.me"]').forEach(function(a){
-    a.addEventListener("click", function(e){
-      const data = payload("lead", a.textContent.trim() + " · " + location.pathname);
-      let sent = false;
-      if (navigator.sendBeacon){
-        try { sent = navigator.sendBeacon(ENDPOINT, new Blob([data], {type:"application/json"})); } catch(_){}
-      }
-      if (!sent){
-        e.preventDefault();
-        const href = a.href;
-        fetch(ENDPOINT, {method:"POST", headers:{"Content-Type":"application/json"}, body:data, keepalive:true}).catch(function(){}).finally(function(){ window.location.href = href; });
-        setTimeout(function(){ window.location.href = href; }, 250);
-      }
-    });
-  });
-})();
-</script>
 <body>
 
 <header>
   <nav class="nav">
-    <a class="logo" href="index.html"><span class="dot"></span> samoilov<b></b></a>
+    <a class="logo" href="index.html"><span class="dot"></span> samoilov<b>.dev</b></a>
     <div class="menu">
       <a href="index.html">Главная</a>
       <a href="uslugi.html">Услуги</a>
@@ -93,7 +59,24 @@
       </div>
     </div>
 
-    <!-- КЕЙС 2 (заглушка): когда сделаешь новый проект — заполни по образцу первого -->
+    <!-- КЕЙС 2: бот-аналитик для сайта -->
+    <div class="case reveal">
+      <span class="case-tag">КЕЙС · Бот-аналитик + Cloudflare</span>
+      <h3>Сделал бота, который собирает заявки и статистику сайта и присылает сводку прямо в Telegram</h3>
+      <div class="case-row">
+        <div class="case-block"><div class="k">Задача</div><div class="v">Не было видно, что происходит на сайте: сколько заходов, откуда заявки и какая конверсия. Данные приходилось искать вручную в разных местах.</div></div>
+        <div class="case-block"><div class="k">Что сделал</div><div class="v">Связал сайт с Cloudflare и Telegram-ботом: каждая заявка падает в личку мгновенно, а просмотры и конверсия копятся и отдаются по команде.</div></div>
+        <div class="case-block"><div class="k">Результат</div><div class="v">Вся аналитика в одном чате: заявки в реальном времени и сводка за день, неделю и по страницам — по одной команде боту.</div></div>
+      </div>
+      <!-- КЕЙС: цифры. Поставь свои реальные или удали этот блок -->
+      <div class="case-result">
+        <div><div class="num">реальное<br>время</div><div class="lbl">заявки приходят<br>сразу в Telegram</div></div>
+        <div><div class="num">1 команда</div><div class="lbl">вся статистика<br>и конверсия</div></div>
+        <div><div class="num">0 ₽</div><div class="lbl">на инфраструктуре<br>(Cloudflare)</div></div>
+      </div>
+    </div>
+
+   
     <div class="case soon reveal">
       <span class="case-tag">Скоро</span>
       <h3>Здесь будет следующий кейс — он появится после ближайшего проекта</h3>
@@ -112,7 +95,7 @@
 
 <footer>
   <div class="wrap">
-    <a class="logo" href="index.html"><span class="dot"></span> samoilov<b></b></a>
+    <a class="logo" href="index.html"><span class="dot"></span> samoilov<b>.dev</b></a>
     <p style="margin-top:10px">Сайты · боты · автоматизация на ИИ · <a href="https://t.me/Personal_name09" target="_blank">@Personal_name09</a></p>
   </div>
 </footer>
